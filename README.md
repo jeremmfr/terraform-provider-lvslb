@@ -6,7 +6,7 @@ Terraform's provider for generate keepalived virtual_server with lvslb-api (http
 Compile:
 ========
 
-export GO111MODULE=on
+export GO111MODULE=on  
 go build -o terraform-provider-lvslb && mv terraform-provider-lvslb /usr/bin/
 
 Config:
