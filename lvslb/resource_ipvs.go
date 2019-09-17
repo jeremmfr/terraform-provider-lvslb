@@ -214,7 +214,21 @@ func resourceIpvsRead(d *schema.ResourceData, m interface{}) error {
 		d.SetId("")
 	}
 	if len(IpvsRead.Backends) == 0 {
-		tfErr := d.Set("backends", []ipvsBackend{})
+		emptyBackend := map[string]interface{}{
+			"ip":                 make([]string, 0),
+			"port":               0,
+			"weight":             0,
+			"check_type":         "",
+			"check_port":         0,
+			"check_timeout":      0,
+			"nb_get_retry":       0,
+			"delay_before_retry": 0,
+			"check_url":          "",
+			"check_digest":       "",
+			"check_status_code":  0,
+			"misc_path":          "",
+		}
+		tfErr := d.Set("backends", []map[string]interface{}{emptyBackend})
 		if tfErr != nil {
 			panic(tfErr)
 		}
