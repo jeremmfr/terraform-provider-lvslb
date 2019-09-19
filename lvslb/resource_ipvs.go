@@ -238,9 +238,9 @@ func resourceIpvsRead(d *schema.ResourceData, m interface{}) error {
 
 func resourceIpvsUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	d.Partial(true)
 	err := validateIPBackend(d)
 	if err != nil {
+		d.SetId("")
 		return err
 	}
 	switch {
@@ -254,12 +254,14 @@ func resourceIpvsUpdate(d *schema.ResourceData, m interface{}) error {
 		IpvsOld.Protocol = strings.ToUpper(oldProtocol.(string))
 		_, err := client.requestAPI("REMOVE", &IpvsOld)
 		if err != nil {
+			d.SetId("")
 			return err
 		}
 		d.SetId("")
 		Ipvs := createStrucIpvs(d)
 		_, err = client.requestAPI("ADD", &Ipvs)
 		if err != nil {
+			d.SetId("")
 			return err
 		}
 		d.SetId(d.Get("ip").(string) + "_" + strings.ToUpper(d.Get("protocol").(string)) + "_" + strconv.Itoa(d.Get("port").(int)))
@@ -269,6 +271,7 @@ func resourceIpvsUpdate(d *schema.ResourceData, m interface{}) error {
 			Ipvs := createStrucIpvs(d)
 			_, err := client.requestAPI("CHANGE", &Ipvs)
 			if err != nil {
+				d.SetId("")
 				return err
 			}
 		} else {
@@ -276,12 +279,14 @@ func resourceIpvsUpdate(d *schema.ResourceData, m interface{}) error {
 			IpvsOld.Protocol = strings.ToUpper(oldProtocol.(string))
 			_, err := client.requestAPI("REMOVE", &IpvsOld)
 			if err != nil {
+				d.SetId("")
 				return err
 			}
 			d.SetId("")
 			Ipvs := createStrucIpvs(d)
 			_, err = client.requestAPI("ADD", &Ipvs)
 			if err != nil {
+				d.SetId("")
 				return err
 			}
 			d.SetId(d.Get("ip").(string) + "_" + strings.ToUpper(d.Get("protocol").(string)) + "_" + strconv.Itoa(d.Get("port").(int)))
@@ -290,10 +295,10 @@ func resourceIpvsUpdate(d *schema.ResourceData, m interface{}) error {
 		Ipvs := createStrucIpvs(d)
 		_, err := client.requestAPI("CHANGE", &Ipvs)
 		if err != nil {
+			d.SetId("")
 			return err
 		}
 	}
-	d.Partial(false)
 	return nil
 }
 
