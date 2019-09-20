@@ -109,7 +109,7 @@ func resourceIpvs() *schema.Resource {
 				Default:  "default",
 			},
 			"backends": {
-				Type:     schema.TypeSet,
+				Type:     schema.TypeList,
 				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -237,10 +237,10 @@ func resourceIpvsRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceIpvsUpdate(d *schema.ResourceData, m interface{}) error {
+	d.Partial(true)
 	client := m.(*Client)
 	err := validateIPBackend(d)
 	if err != nil {
-		d.SetId("")
 		return err
 	}
 	switch {
@@ -254,14 +254,12 @@ func resourceIpvsUpdate(d *schema.ResourceData, m interface{}) error {
 		IpvsOld.Protocol = strings.ToUpper(oldProtocol.(string))
 		_, err := client.requestAPI("REMOVE", &IpvsOld)
 		if err != nil {
-			d.SetId("")
 			return err
 		}
 		d.SetId("")
 		Ipvs := createStrucIpvs(d)
 		_, err = client.requestAPI("ADD", &Ipvs)
 		if err != nil {
-			d.SetId("")
 			return err
 		}
 		d.SetId(d.Get("ip").(string) + "_" + strings.ToUpper(d.Get("protocol").(string)) + "_" + strconv.Itoa(d.Get("port").(int)))
@@ -271,7 +269,6 @@ func resourceIpvsUpdate(d *schema.ResourceData, m interface{}) error {
 			Ipvs := createStrucIpvs(d)
 			_, err := client.requestAPI("CHANGE", &Ipvs)
 			if err != nil {
-				d.SetId("")
 				return err
 			}
 		} else {
@@ -279,14 +276,12 @@ func resourceIpvsUpdate(d *schema.ResourceData, m interface{}) error {
 			IpvsOld.Protocol = strings.ToUpper(oldProtocol.(string))
 			_, err := client.requestAPI("REMOVE", &IpvsOld)
 			if err != nil {
-				d.SetId("")
 				return err
 			}
 			d.SetId("")
 			Ipvs := createStrucIpvs(d)
 			_, err = client.requestAPI("ADD", &Ipvs)
 			if err != nil {
-				d.SetId("")
 				return err
 			}
 			d.SetId(d.Get("ip").(string) + "_" + strings.ToUpper(d.Get("protocol").(string)) + "_" + strconv.Itoa(d.Get("port").(int)))
@@ -295,10 +290,10 @@ func resourceIpvsUpdate(d *schema.ResourceData, m interface{}) error {
 		Ipvs := createStrucIpvs(d)
 		_, err := client.requestAPI("CHANGE", &Ipvs)
 		if err != nil {
-			d.SetId("")
 			return err
 		}
 	}
+	d.Partial(false)
 	return nil
 }
 
@@ -314,7 +309,7 @@ func resourceIpvsDelete(d *schema.ResourceData, m interface{}) error {
 
 func validateIPBackend(d *schema.ResourceData) error {
 	if v, ok := d.GetOk("backends"); ok {
-		backendSet := v.(*schema.Set).List()
+		backendSet := v.([]interface{})
 		for _, dataBackend := range backendSet {
 			backend := dataBackend.(map[string]interface{})
 			for _, backendIP := range backend["ip"].([]interface{}) {
@@ -338,7 +333,7 @@ func validateIPBackend(d *schema.ResourceData) error {
 func createStrucIpvs(d *schema.ResourceData) ipvs {
 	var backends []ipvsBackend
 	if v, ok := d.GetOk("backends"); ok {
-		backendSet := v.(*schema.Set).List()
+		backendSet := v.([]interface{})
 		for _, dataBackend := range backendSet {
 			backend := dataBackend.(map[string]interface{})
 			for _, backendIP := range backend["ip"].([]interface{}) {
