@@ -265,7 +265,7 @@ func resourceIpvsUpdate(d *schema.ResourceData, m interface{}) error {
 		d.SetId(d.Get("ip").(string) + "_" + strings.ToUpper(d.Get("protocol").(string)) + "_" + strconv.Itoa(d.Get("port").(int)))
 	case d.HasChange("protocol"):
 		oldProtocol, _ := d.GetChange("protocol")
-		if strings.ToUpper(oldProtocol.(string)) == strings.ToUpper(d.Get("protocol").(string)) {
+		if strings.EqualFold(oldProtocol.(string), d.Get("protocol").(string)) {
 			Ipvs := createStrucIpvs(d)
 			_, err := client.requestAPI("CHANGE", &Ipvs)
 			if err != nil {
