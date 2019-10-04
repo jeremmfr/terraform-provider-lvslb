@@ -1,5 +1,7 @@
 linters:
   enable-all: true
+  disable:
+    - funlen
 issues:
   exclude-rules:
     - text: "TLS InsecureSkipVerify set true"
