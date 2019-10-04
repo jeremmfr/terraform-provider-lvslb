@@ -64,7 +64,8 @@ func resourceIpvs() *schema.Resource {
 				Default:  "wlc",
 				ValidateFunc: func(v interface{}, k string) (ws []string, errors []error) {
 					value := strings.ToLower(v.(string))
-					if value != "wlc" && value != "lc" && value != "rr" && value != "wrr" && value != "lblc" && value != "sh" && value != "dh" {
+					if value != "wlc" && value != "lc" && value != "rr" && value != "wrr" &&
+						value != "lblc" && value != "sh" && value != "dh" {
 						errors = append(errors, fmt.Errorf("[ERROR] %q must be wlc, lc, rr, wrr, lblc, sh or dh", k))
 					}
 					return
@@ -135,7 +136,8 @@ func resourceIpvs() *schema.Resource {
 							Default:  "TCP_CHECK",
 							ValidateFunc: func(v interface{}, k string) (ws []string, errors []error) {
 								value := strings.ToUpper(v.(string))
-								if value != "TCP_CHECK" && value != "HTTP_GET" && value != "SSL_GET" && value != "MISC_CHECK" && value != "NONE" {
+								if value != "TCP_CHECK" && value != "HTTP_GET" && value != "SSL_GET" &&
+									value != "MISC_CHECK" && value != "NONE" {
 									errors = append(errors, fmt.Errorf("[ERROR] %q must be TCP_CHECK, HTTP_GET, SSL GET, MISC_CHECK or NONE", k))
 								}
 								return
@@ -199,7 +201,8 @@ func resourceIpvsCreate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	d.SetId(d.Get("ip").(string) + "_" + strings.ToUpper(d.Get("protocol").(string)) + "_" + strconv.Itoa(d.Get("port").(int)))
+	d.SetId(d.Get("ip").(string) + "_" + strings.ToUpper(d.Get("protocol").(string)) +
+		"_" + strconv.Itoa(d.Get("port").(int)))
 	return nil
 }
 
@@ -262,7 +265,8 @@ func resourceIpvsUpdate(d *schema.ResourceData, m interface{}) error {
 		if err != nil {
 			return err
 		}
-		d.SetId(d.Get("ip").(string) + "_" + strings.ToUpper(d.Get("protocol").(string)) + "_" + strconv.Itoa(d.Get("port").(int)))
+		d.SetId(d.Get("ip").(string) + "_" + strings.ToUpper(d.Get("protocol").(string)) +
+			"_" + strconv.Itoa(d.Get("port").(int)))
 	case d.HasChange("protocol"):
 		oldProtocol, _ := d.GetChange("protocol")
 		if strings.EqualFold(oldProtocol.(string), d.Get("protocol").(string)) {
@@ -284,7 +288,8 @@ func resourceIpvsUpdate(d *schema.ResourceData, m interface{}) error {
 			if err != nil {
 				return err
 			}
-			d.SetId(d.Get("ip").(string) + "_" + strings.ToUpper(d.Get("protocol").(string)) + "_" + strconv.Itoa(d.Get("port").(int)))
+			d.SetId(d.Get("ip").(string) + "_" + strings.ToUpper(d.Get("protocol").(string)) +
+				"_" + strconv.Itoa(d.Get("port").(int)))
 		}
 	default:
 		Ipvs := createStrucIpvs(d)

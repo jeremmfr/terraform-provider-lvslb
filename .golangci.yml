@@ -1,0 +1,7 @@
+linters:
+  enable-all: true
+issues:
+  exclude-rules:
+    - text: "TLS InsecureSkipVerify set true"
+      linters:
+        - gosec

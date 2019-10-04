@@ -56,7 +56,8 @@ type ipvsBackend struct {
 type ipvsBackends []ipvsBackend
 
 // NewClient configure
-func NewClient(firewallIP string, firewallPort int, https bool, insecure bool, logname string, login string, password string) *Client {
+func NewClient(firewallIP string, firewallPort int, https bool, insecure bool, logname string,
+	login string, password string) *Client {
 	client := &Client{
 		FirewallIP: firewallIP,
 		Port:       firewallPort,
