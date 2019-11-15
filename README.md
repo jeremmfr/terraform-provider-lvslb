@@ -1,8 +1,9 @@
 # terraform-provider-lvslb
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/jeremmfr/terraform-provider-lvslb)
+[![Go Status](https://github.com/jeremmfr/terraform-provider-lvslb/workflows/Go%20Tests/badge.svg)](https://github.com/jeremmfr/terraform-provider-lvslb/actions)
+[![Lint Status](https://github.com/jeremmfr/terraform-provider-lvslb/workflows/GolangCI-Lint/badge.svg)](https://github.com/jeremmfr/terraform-provider-lvslb/actions)
 [![GoDoc](https://godoc.org/github.com/jeremmfr/terraform-provider-lvslb?status.svg)](https://godoc.org/github.com/jeremmfr/terraform-provider-lvslb)
 [![Go Report Card](https://goreportcard.com/badge/github.com/jeremmfr/terraform-provider-lvslb)](https://goreportcard.com/report/github.com/jeremmfr/terraform-provider-lvslb)
-[![Build Status](https://travis-ci.org/jeremmfr/terraform-provider-lvslb.svg?branch=master)](https://travis-ci.org/jeremmfr/terraform-provider-lvslb)
 
 Terraform's provider for generate keepalived virtual_server with lvslb-api (https://github.com/jeremmfr/lvslb-api)
 
@@ -17,7 +18,7 @@ Config:
 
 Setup information for contact server :
 ```
-provider "lvsnetwork" {
+provider "lvslb" {
     firewall_ip = "192.168.0.1"
     port		= 9443
 	https		= true
@@ -25,8 +26,8 @@ provider "lvsnetwork" {
 	vault_enable = true
 }
 ```
-* **firewall_ip** : (Required) IP for firewall API (lvsnetwork-api)
-* **port** : (Optional) [Def: 8080] Port for firewall API (lvsnetwork-api)
+* **firewall_ip** : (Required) IP for firewall API (lvslb-api)
+* **port** : (Optional) [Def: 8080] Port for firewall API (lvslb-api)
 * **https** : (Optional) [Def: false] Use HTTPS for firewall API
 * **insecure** : (Optional) [Def: false] Don't check certificate for HTTPS
 * **login** : (Optional) [Def: ""] User for http basic authentication
