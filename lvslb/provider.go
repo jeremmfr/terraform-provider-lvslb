@@ -9,7 +9,7 @@ import (
 
 const nullStr string = "null"
 const (
-	defaultPortListen = 8080
+	defaultFirewallPort = 8080
 )
 
 // Provider lvslb for terraform
@@ -23,7 +23,7 @@ func Provider() terraform.ResourceProvider {
 			"port": {
 				Type:     schema.TypeInt,
 				Optional: true,
-				Default:  defaultPortListen,
+				Default:  defaultFirewallPort,
 			},
 			"https": {
 				Type:     schema.TypeBool,
