@@ -78,7 +78,7 @@ func (client *Client) newRequest(uri string, ipvs *ipvs) (int, string, error) {
 	body := new(bytes.Buffer)
 	err := json.NewEncoder(body).Encode(ipvs)
 	if err != nil {
-		return 500, "", err
+		return http.StatusInternalServerError, "", err
 	}
 	req, err := http.NewRequest("POST", urlString, body)
 	req.Header.Add("Content-Type", "application/json; charset=utf-8")
@@ -86,7 +86,7 @@ func (client *Client) newRequest(uri string, ipvs *ipvs) (int, string, error) {
 		req.SetBasicAuth(client.Login, client.Password)
 	}
 	if err != nil {
-		return 500, "", err
+		return http.StatusInternalServerError, "", err
 	}
 	tr := &http.Transport{
 		DisableKeepAlives: true,
@@ -101,12 +101,12 @@ func (client *Client) newRequest(uri string, ipvs *ipvs) (int, string, error) {
 	log.Printf("[DEBUG] Request API (%v) %v", urlString, body)
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		return 500, "", err
+		return http.StatusInternalServerError, "", err
 	}
 	defer resp.Body.Close()
 	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return 500, "", err
+		return http.StatusInternalServerError, "", err
 	}
 	log.Printf("[DEBUG] Response API (%v) %v => %v", urlString, resp.StatusCode, string(respBody))
 	return resp.StatusCode, string(respBody), nil
@@ -121,10 +121,10 @@ func (client *Client) requestAPI(action string, ipvsSend *ipvs) (ipvs, error) {
 		if err != nil {
 			return ipvsReturn, err
 		}
-		if statuscode == 401 {
+		if statuscode == http.StatusUnauthorized {
 			return ipvsReturn, fmt.Errorf("you are Unauthorized")
 		}
-		if statuscode != 200 {
+		if statuscode != http.StatusOK {
 			return ipvsReturn, fmt.Errorf(body)
 		}
 		return ipvsReturn, nil
@@ -134,10 +134,10 @@ func (client *Client) requestAPI(action string, ipvsSend *ipvs) (ipvs, error) {
 		if err != nil {
 			return ipvsReturn, err
 		}
-		if statuscode == 401 {
+		if statuscode == http.StatusUnauthorized {
 			return ipvsReturn, fmt.Errorf("you are Unauthorized")
 		}
-		if statuscode != 200 {
+		if statuscode != http.StatusOK {
 			return ipvsReturn, fmt.Errorf(body)
 		}
 		return ipvsReturn, nil
@@ -147,10 +147,10 @@ func (client *Client) requestAPI(action string, ipvsSend *ipvs) (ipvs, error) {
 		if err != nil {
 			return ipvsReturn, err
 		}
-		if statuscode == 401 {
+		if statuscode == http.StatusUnauthorized {
 			return ipvsReturn, fmt.Errorf("you are Unauthorized")
 		}
-		if statuscode == 404 {
+		if statuscode == http.StatusNotFound {
 			ipvsReturn.IP = nullStr
 			ipvsReturn.Protocol = nullStr
 			ipvsReturn.Port = nullStr
@@ -168,10 +168,10 @@ func (client *Client) requestAPI(action string, ipvsSend *ipvs) (ipvs, error) {
 		if err != nil {
 			return ipvsReturn, err
 		}
-		if statuscode == 401 {
+		if statuscode == http.StatusUnauthorized {
 			return ipvsReturn, fmt.Errorf("you are Unauthorized")
 		}
-		if statuscode != 200 {
+		if statuscode != http.StatusOK {
 			return ipvsReturn, fmt.Errorf(body)
 		}
 		return ipvsReturn, nil

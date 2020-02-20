@@ -8,6 +8,9 @@ import (
 )
 
 const nullStr string = "null"
+const (
+	defaultPortListen = 8080
+)
 
 // Provider lvslb for terraform
 func Provider() terraform.ResourceProvider {
@@ -20,7 +23,7 @@ func Provider() terraform.ResourceProvider {
 			"port": {
 				Type:     schema.TypeInt,
 				Optional: true,
-				Default:  8080,
+				Default:  defaultPortListen,
 			},
 			"https": {
 				Type:     schema.TypeBool,

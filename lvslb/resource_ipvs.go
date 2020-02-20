@@ -9,6 +9,23 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
+const (
+	one                     = 1
+	maxInternetPort         = int(1<<16 - one)
+	defaultTimerCheck       = 5
+	maxTimerCheck           = 60
+	defaultCheckTimeout     = 3
+	maxCheckTimeout         = 60
+	defaultNbGetRetry       = 3
+	maxNbGetRetry           = 10
+	defaultDelayBeforeRetry = 3
+	maxDelayBeforeRetry     = 60
+	maxPersistenceTimeout   = 86400
+	maxBackendWeight        = 1000
+	minStatusCode           = 100
+	maxStatusCode           = 600
+)
+
 func resourceIpvs() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceIpvsCreate,
@@ -32,7 +49,7 @@ func resourceIpvs() *schema.Resource {
 			"port": {
 				Type:         schema.TypeInt,
 				Required:     true,
-				ValidateFunc: validateIntegerInRange(0, 65535),
+				ValidateFunc: validateIntegerInRange(0, maxInternetPort),
 			},
 			"protocol": {
 				Type:     schema.TypeString,
@@ -75,13 +92,13 @@ func resourceIpvs() *schema.Resource {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Default:      0,
-				ValidateFunc: validateIntegerInRange(0, 86400),
+				ValidateFunc: validateIntegerInRange(0, maxPersistenceTimeout),
 			},
 			"timer_check": {
 				Type:         schema.TypeInt,
 				Optional:     true,
-				Default:      5,
-				ValidateFunc: validateIntegerInRange(1, 60),
+				Default:      defaultTimerCheck,
+				ValidateFunc: validateIntegerInRange(one, maxTimerCheck),
 			},
 			"sorry_server_ip": {
 				Type:     schema.TypeString,
@@ -98,7 +115,7 @@ func resourceIpvs() *schema.Resource {
 			"sorry_server_port": {
 				Type:         schema.TypeInt,
 				Optional:     true,
-				ValidateFunc: validateIntegerInRange(0, 65535),
+				ValidateFunc: validateIntegerInRange(0, maxInternetPort),
 			},
 			"virtualhost": {
 				Type:     schema.TypeString,
@@ -122,13 +139,13 @@ func resourceIpvs() *schema.Resource {
 						"port": {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							ValidateFunc: validateIntegerInRange(0, 65535),
+							ValidateFunc: validateIntegerInRange(0, maxInternetPort),
 						},
 						"weight": {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							Default:      1,
-							ValidateFunc: validateIntegerInRange(1, 1000),
+							Default:      one,
+							ValidateFunc: validateIntegerInRange(one, maxBackendWeight),
 						},
 						"check_type": {
 							Type:     schema.TypeString,
@@ -146,25 +163,25 @@ func resourceIpvs() *schema.Resource {
 						"check_port": {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							ValidateFunc: validateIntegerInRange(1, 65535),
+							ValidateFunc: validateIntegerInRange(one, maxInternetPort),
 						},
 						"check_timeout": {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							Default:      3,
-							ValidateFunc: validateIntegerInRange(1, 60),
+							Default:      defaultCheckTimeout,
+							ValidateFunc: validateIntegerInRange(one, maxCheckTimeout),
 						},
 						"nb_get_retry": {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							Default:      3,
-							ValidateFunc: validateIntegerInRange(1, 10),
+							Default:      defaultNbGetRetry,
+							ValidateFunc: validateIntegerInRange(one, maxNbGetRetry),
 						},
 						"delay_before_retry": {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							Default:      3,
-							ValidateFunc: validateIntegerInRange(1, 60),
+							Default:      defaultDelayBeforeRetry,
+							ValidateFunc: validateIntegerInRange(one, maxDelayBeforeRetry),
 						},
 						"check_url": {
 							Type:     schema.TypeString,
@@ -177,7 +194,7 @@ func resourceIpvs() *schema.Resource {
 						"check_status_code": {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							ValidateFunc: validateIntegerInRange(100, 600),
+							ValidateFunc: validateIntegerInRange(minStatusCode, maxStatusCode),
 						},
 						"misc_path": {
 							Type:     schema.TypeString,
