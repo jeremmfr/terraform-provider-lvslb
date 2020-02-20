@@ -1,4 +1,4 @@
-module github.com/jeremmfr/terraform-provider-lvslb
+module terraform-provider-lvslb
 
 go 1.13
 
