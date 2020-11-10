@@ -6,7 +6,7 @@ import (
 	vaultapi "github.com/hashicorp/vault/api"
 )
 
-// Config provider
+// Config provider.
 type Config struct {
 	https        bool
 	insecure     bool
@@ -20,7 +20,7 @@ type Config struct {
 	vaultKey     string
 }
 
-// Client configures with Config
+// Client configures with Config.
 func (c *Config) Client() (*Client, error) {
 	var client *Client
 	if !c.vaultEnable {
@@ -73,5 +73,6 @@ func getLoginVault(path string, firewallIP string, key string) (string, string) 
 			}
 		}
 	}
+
 	return login, password
 }

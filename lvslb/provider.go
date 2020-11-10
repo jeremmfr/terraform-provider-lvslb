@@ -12,7 +12,7 @@ const (
 	defaultFirewallPort = 8080
 )
 
-// Provider lvslb for terraform
+// Provider lvslb for terraform.
 func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
@@ -80,5 +80,6 @@ func configureProvider(d *schema.ResourceData) (interface{}, error) {
 		vaultPath:    d.Get("vault_path").(string),
 		vaultKey:     d.Get("vault_key").(string),
 	}
+
 	return config.Client()
 }

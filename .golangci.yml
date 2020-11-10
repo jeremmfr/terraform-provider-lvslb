@@ -3,6 +3,11 @@ linters:
   disable:
     - funlen
     - wsl
+    - wrapcheck
+    - goerr113
+    - nestif
+    - exhaustivestruct
+    - errorlint
 linters-settings:
   gocognit:
     # minimal code complexity to report, 30 by default

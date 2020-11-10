@@ -43,6 +43,7 @@ func resourceIpvs() *schema.Resource {
 					if testInput.To16() == nil {
 						errors = append(errors, fmt.Errorf("[ERROR] %q %v isn't an IPv4 or IPv6", k, value))
 					}
+
 					return
 				},
 			},
@@ -60,6 +61,7 @@ func resourceIpvs() *schema.Resource {
 					if value != "TCP" && value != "UDP" && value != "SCTP" {
 						errors = append(errors, fmt.Errorf("[ERROR] %q must be TCP or UDP", k))
 					}
+
 					return
 				},
 			},
@@ -72,6 +74,7 @@ func resourceIpvs() *schema.Resource {
 					if value != "NAT" && value != "DR" && value != "TUN" {
 						errors = append(errors, fmt.Errorf("[ERROR] %q must be NAT, DR or TUN", k))
 					}
+
 					return
 				},
 			},
@@ -85,6 +88,7 @@ func resourceIpvs() *schema.Resource {
 						value != "lblc" && value != "sh" && value != "dh" {
 						errors = append(errors, fmt.Errorf("[ERROR] %q must be wlc, lc, rr, wrr, lblc, sh or dh", k))
 					}
+
 					return
 				},
 			},
@@ -109,6 +113,7 @@ func resourceIpvs() *schema.Resource {
 					if testInput.To16() == nil {
 						errors = append(errors, fmt.Errorf("[ERROR] %q %v isn't an IPv4 or IPv6", k, value))
 					}
+
 					return
 				},
 			},
@@ -157,6 +162,7 @@ func resourceIpvs() *schema.Resource {
 									value != "MISC_CHECK" && value != "NONE" {
 									errors = append(errors, fmt.Errorf("[ERROR] %q must be TCP_CHECK, HTTP_GET, SSL GET, MISC_CHECK or NONE", k))
 								}
+
 								return
 							},
 						},
@@ -220,6 +226,7 @@ func resourceIpvsCreate(d *schema.ResourceData, m interface{}) error {
 	}
 	d.SetId(d.Get("ip").(string) + "_" + strings.ToUpper(d.Get("protocol").(string)) +
 		"_" + strconv.Itoa(d.Get("port").(int)))
+
 	return nil
 }
 
@@ -253,6 +260,7 @@ func resourceIpvsRead(d *schema.ResourceData, m interface{}) error {
 			panic(tfErr)
 		}
 	}
+
 	return nil
 }
 
@@ -316,6 +324,7 @@ func resourceIpvsUpdate(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 	d.Partial(false)
+
 	return nil
 }
 
@@ -326,6 +335,7 @@ func resourceIpvsDelete(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -350,8 +360,10 @@ func validateIPBackend(d *schema.ResourceData) error {
 			}
 		}
 	}
+
 	return nil
 }
+
 func createStrucIpvs(d *schema.ResourceData) ipvs {
 	var backends []ipvsBackend
 	if v, ok := d.GetOk("backends"); ok {
@@ -413,5 +425,6 @@ func createStrucIpvs(d *schema.ResourceData) ipvs {
 		MonPeriod:          d.Get("monitoring_period").(string),
 		Backends:           backends,
 	}
+
 	return Ipvs
 }

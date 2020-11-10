@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
-// validateIntegerInRange : for validate int range for *schema.TypeInt
+// validateIntegerInRange : for validate int range for *schema.TypeInt.
 func validateIntegerInRange(min, max int) schema.SchemaValidateFunc {
 	return func(v interface{}, k string) (ws []string, errors []error) {
 		value := v.(int)
@@ -18,6 +18,7 @@ func validateIntegerInRange(min, max int) schema.SchemaValidateFunc {
 			errors = append(errors, fmt.Errorf(
 				"%q cannot be higher than %d: %d", k, max, value))
 		}
+
 		return
 	}
 }

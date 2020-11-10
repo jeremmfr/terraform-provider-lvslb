@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-// Client = provider configuration
+// Client = provider configuration.
 type Client struct {
 	FirewallIP string
 	Port       int
@@ -55,7 +55,7 @@ type ipvsBackend struct {
 
 type ipvsBackends []ipvsBackend
 
-// NewClient configure
+// NewClient configure.
 func NewClient(firewallIP string, firewallPort int, https bool, insecure bool, logname string,
 	login string, password string) *Client {
 	client := &Client{
@@ -67,20 +67,21 @@ func NewClient(firewallIP string, firewallPort int, https bool, insecure bool, l
 		Login:      login,
 		Password:   password,
 	}
+
 	return client
 }
 
 func (client *Client) newRequest(uri string, ipvs *ipvs) (int, string, error) {
 	urlString := "http://" + client.FirewallIP + ":" + strconv.Itoa(client.Port) + uri + "?&logname=" + client.Logname
 	if client.HTTPS {
-		urlString = strings.Replace(urlString, "http://", "https://", -1)
+		urlString = strings.ReplaceAll(urlString, "http://", "https://")
 	}
 	body := new(bytes.Buffer)
 	err := json.NewEncoder(body).Encode(ipvs)
 	if err != nil {
 		return http.StatusInternalServerError, "", err
 	}
-	req, err := http.NewRequest("POST", urlString, body)
+	req, err := http.NewRequest("POST", urlString, body) // nolint: noctx
 	req.Header.Add("Content-Type", "application/json; charset=utf-8")
 	if client.Login != "" && client.Password != "" {
 		req.SetBasicAuth(client.Login, client.Password)
@@ -109,6 +110,7 @@ func (client *Client) newRequest(uri string, ipvs *ipvs) (int, string, error) {
 		return http.StatusInternalServerError, "", err
 	}
 	log.Printf("[DEBUG] Response API (%v) %v => %v", urlString, resp.StatusCode, string(respBody))
+
 	return resp.StatusCode, string(respBody), nil
 }
 
@@ -127,6 +129,7 @@ func (client *Client) requestAPI(action string, ipvsSend *ipvs) (ipvs, error) {
 		if statuscode != http.StatusOK {
 			return ipvsReturn, fmt.Errorf(body)
 		}
+
 		return ipvsReturn, nil
 	case "REMOVE":
 		uriString := "/remove_ipvs/" + ipvsSend.Protocol + "/" + ipvsSend.IP + "/" + ipvsSend.Port + "/"
@@ -140,6 +143,7 @@ func (client *Client) requestAPI(action string, ipvsSend *ipvs) (ipvs, error) {
 		if statuscode != http.StatusOK {
 			return ipvsReturn, fmt.Errorf(body)
 		}
+
 		return ipvsReturn, nil
 	case "CHECK":
 		uriString := "/check_ipvs/" + ipvsSend.Protocol + "/" + ipvsSend.IP + "/" + ipvsSend.Port + "/"
@@ -154,6 +158,7 @@ func (client *Client) requestAPI(action string, ipvsSend *ipvs) (ipvs, error) {
 			ipvsReturn.IP = nullStr
 			ipvsReturn.Protocol = nullStr
 			ipvsReturn.Port = nullStr
+
 			return ipvsReturn, nil
 		}
 
@@ -161,6 +166,7 @@ func (client *Client) requestAPI(action string, ipvsSend *ipvs) (ipvs, error) {
 		if errDecode != nil {
 			return ipvsReturn, fmt.Errorf("[ERROR] decode json API response (%v) %v", errDecode, body)
 		}
+
 		return ipvsReturn, nil
 	case "CHANGE":
 		uriString := "/change_ipvs/" + ipvsSend.Protocol + "/" + ipvsSend.IP + "/" + ipvsSend.Port + "/"
@@ -174,7 +180,9 @@ func (client *Client) requestAPI(action string, ipvsSend *ipvs) (ipvs, error) {
 		if statuscode != http.StatusOK {
 			return ipvsReturn, fmt.Errorf(body)
 		}
+
 		return ipvsReturn, nil
 	}
+
 	return ipvsReturn, fmt.Errorf("internal error => unknown action for requestAPI")
 }
