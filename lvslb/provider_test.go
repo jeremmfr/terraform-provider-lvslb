@@ -1,8 +1,9 @@
 package lvslb_test
 
 import (
-	"terraform-provider-lvslb/lvslb"
 	"testing"
+
+	"github.com/jeremmfr/terraform-provider-lvslb/lvslb"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
