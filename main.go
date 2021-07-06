@@ -1,7 +1,7 @@
 package main
 
 import (
-	"terraform-provider-lvslb/lvslb"
+	"github.com/jeremmfr/terraform-provider-lvslb/lvslb"
 
 	"github.com/hashicorp/terraform/plugin"
 )

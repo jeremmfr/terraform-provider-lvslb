@@ -267,8 +267,7 @@ func resourceIpvsRead(d *schema.ResourceData, m interface{}) error {
 func resourceIpvsUpdate(d *schema.ResourceData, m interface{}) error {
 	d.Partial(true)
 	client := m.(*Client)
-	err := validateIPBackend(d)
-	if err != nil {
+	if err := validateIPBackend(d); err != nil {
 		return err
 	}
 	switch {
