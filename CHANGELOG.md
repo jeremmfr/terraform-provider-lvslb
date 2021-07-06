@@ -1,3 +1,4 @@
+## 1.0.4 (July 6, 2021)
 * fix permanent conflict between `vault_enable` and `login`/`password` provider argument 
 
 ## 1.0.3 (October 10, 2019)
