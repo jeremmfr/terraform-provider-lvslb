@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -28,10 +29,10 @@ const (
 
 func resourceIpvs() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceIpvsCreate,
-		Read:   resourceIpvsRead,
-		Update: resourceIpvsUpdate,
-		Delete: resourceIpvsDelete,
+		CreateContext: resourceIpvsCreate,
+		ReadContext:   resourceIpvsRead,
+		UpdateContext: resourceIpvsUpdate,
+		DeleteContext: resourceIpvsDelete,
 
 		Schema: map[string]*schema.Schema{
 			"ip": {
@@ -213,16 +214,16 @@ func resourceIpvs() *schema.Resource {
 	}
 }
 
-func resourceIpvsCreate(d *schema.ResourceData, m interface{}) error {
+func resourceIpvsCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 	err := validateIPBackend(d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	Ipvs := createStrucIpvs(d)
-	_, err = client.requestAPI("ADD", &Ipvs)
+	_, err = client.requestAPI(ctx, "ADD", &Ipvs)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(d.Get("ip").(string) + "_" + strings.ToUpper(d.Get("protocol").(string)) +
 		"_" + strconv.Itoa(d.Get("port").(int)))
@@ -230,12 +231,12 @@ func resourceIpvsCreate(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceIpvsRead(d *schema.ResourceData, m interface{}) error {
+func resourceIpvsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 	Ipvs := createStrucIpvs(d)
-	IpvsRead, err := client.requestAPI("CHECK", &Ipvs)
+	IpvsRead, err := client.requestAPI(ctx, "CHECK", &Ipvs)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if IpvsRead.IP == nullStr {
 		d.SetId("")
@@ -264,11 +265,11 @@ func resourceIpvsRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceIpvsUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceIpvsUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	d.Partial(true)
 	client := m.(*Client)
 	if err := validateIPBackend(d); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	switch {
 	case d.HasChange("ip") || d.HasChange("port"):
@@ -279,15 +280,15 @@ func resourceIpvsUpdate(d *schema.ResourceData, m interface{}) error {
 		IpvsOld.Port = strconv.Itoa(oldPort.(int))
 		oldProtocol, _ := d.GetChange("protocol")
 		IpvsOld.Protocol = strings.ToUpper(oldProtocol.(string))
-		_, err := client.requestAPI("REMOVE", &IpvsOld)
+		_, err := client.requestAPI(ctx, "REMOVE", &IpvsOld)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		d.SetId("")
 		Ipvs := createStrucIpvs(d)
-		_, err = client.requestAPI("ADD", &Ipvs)
+		_, err = client.requestAPI(ctx, "ADD", &Ipvs)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		d.SetId(d.Get("ip").(string) + "_" + strings.ToUpper(d.Get("protocol").(string)) +
 			"_" + strconv.Itoa(d.Get("port").(int)))
@@ -295,31 +296,31 @@ func resourceIpvsUpdate(d *schema.ResourceData, m interface{}) error {
 		oldProtocol, _ := d.GetChange("protocol")
 		if strings.EqualFold(oldProtocol.(string), d.Get("protocol").(string)) {
 			Ipvs := createStrucIpvs(d)
-			_, err := client.requestAPI("CHANGE", &Ipvs)
+			_, err := client.requestAPI(ctx, "CHANGE", &Ipvs)
 			if err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 		} else {
 			IpvsOld := createStrucIpvs(d)
 			IpvsOld.Protocol = strings.ToUpper(oldProtocol.(string))
-			_, err := client.requestAPI("REMOVE", &IpvsOld)
+			_, err := client.requestAPI(ctx, "REMOVE", &IpvsOld)
 			if err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 			d.SetId("")
 			Ipvs := createStrucIpvs(d)
-			_, err = client.requestAPI("ADD", &Ipvs)
+			_, err = client.requestAPI(ctx, "ADD", &Ipvs)
 			if err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 			d.SetId(d.Get("ip").(string) + "_" + strings.ToUpper(d.Get("protocol").(string)) +
 				"_" + strconv.Itoa(d.Get("port").(int)))
 		}
 	default:
 		Ipvs := createStrucIpvs(d)
-		_, err := client.requestAPI("CHANGE", &Ipvs)
+		_, err := client.requestAPI(ctx, "CHANGE", &Ipvs)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 	d.Partial(false)
@@ -327,12 +328,12 @@ func resourceIpvsUpdate(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceIpvsDelete(d *schema.ResourceData, m interface{}) error {
+func resourceIpvsDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 	Ipvs := createStrucIpvs(d)
-	_, err := client.requestAPI("REMOVE", &Ipvs)
+	_, err := client.requestAPI(ctx, "REMOVE", &Ipvs)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil
