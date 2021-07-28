@@ -5,16 +5,15 @@ import (
 
 	"github.com/jeremmfr/terraform-provider-lvslb/lvslb"
 
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func TestProvider(t *testing.T) {
-	if err := lvslb.Provider().(*schema.Provider).InternalValidate(); err != nil {
+	if err := lvslb.Provider().InternalValidate(); err != nil {
 		t.Fatalf("err: %s", err)
 	}
 }
 
 func TestProvider_impl(t *testing.T) {
-	var _ terraform.ResourceProvider = lvslb.Provider()
+	var _ *schema.Provider = lvslb.Provider()
 }

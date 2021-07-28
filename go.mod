@@ -3,10 +3,6 @@ module github.com/jeremmfr/terraform-provider-lvslb
 go 1.13
 
 require (
-	github.com/frankban/quicktest v1.5.0 // indirect
-	github.com/golang/snappy v0.0.1 // indirect
-	github.com/hashicorp/terraform v0.12.9
-	github.com/hashicorp/vault v1.1.2
-	github.com/pierrec/lz4 v2.3.0+incompatible // indirect
-	github.com/ryanuber/go-glob v1.0.0 // indirect
+	github.com/hashicorp/terraform-plugin-sdk/v2 v2.7.0
+	github.com/hashicorp/vault/api v1.1.1
 )
