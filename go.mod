@@ -1,6 +1,6 @@
 module github.com/jeremmfr/terraform-provider-lvslb
 
-go 1.13
+go 1.15
 
 require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.7.0
