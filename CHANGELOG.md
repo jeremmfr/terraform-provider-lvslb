@@ -1,12 +1,14 @@
 <!-- markdownlint-disable-file MD041 -->
 ## upcoming release
 
+## 1.1.0 (July 30, 2021)
+
 * switch to the standalone SDK v2 for compatibility with last Terraform version
 * move docs in dedicated directory
 * bump golang version
 * refactor release workflow (GH Actions) to generate files compatible with Terraform registry
 
-## 1.0.4 (July 6, 2021)
+## 1.0.4 (July 06, 2021)
 
 * fix permanent conflict between `vault_enable` and `login`/`password` provider arguments
 
