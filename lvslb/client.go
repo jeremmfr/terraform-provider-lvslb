@@ -2,6 +2,7 @@ package lvslb
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
@@ -71,7 +72,7 @@ func NewClient(firewallIP string, firewallPort int, https bool, insecure bool, l
 	return client
 }
 
-func (client *Client) newRequest(uri string, ipvs *ipvs) (int, string, error) {
+func (client *Client) newRequest(ctx context.Context, uri string, ipvs *ipvs) (int, string, error) {
 	urlString := "http://" + client.FirewallIP + ":" + strconv.Itoa(client.Port) + uri + "?&logname=" + client.Logname
 	if client.HTTPS {
 		urlString = strings.ReplaceAll(urlString, "http://", "https://")
@@ -81,7 +82,7 @@ func (client *Client) newRequest(uri string, ipvs *ipvs) (int, string, error) {
 	if err != nil {
 		return http.StatusInternalServerError, "", err
 	}
-	req, err := http.NewRequest("POST", urlString, body) // nolint: noctx
+	req, err := http.NewRequestWithContext(ctx, "POST", urlString, body)
 	req.Header.Add("Content-Type", "application/json; charset=utf-8")
 	if client.Login != "" && client.Password != "" {
 		req.SetBasicAuth(client.Login, client.Password)
@@ -114,12 +115,12 @@ func (client *Client) newRequest(uri string, ipvs *ipvs) (int, string, error) {
 	return resp.StatusCode, string(respBody), nil
 }
 
-func (client *Client) requestAPI(action string, ipvsSend *ipvs) (ipvs, error) {
+func (client *Client) requestAPI(ctx context.Context, action string, ipvsSend *ipvs) (ipvs, error) {
 	var ipvsReturn ipvs
 	switch action {
 	case "ADD":
 		uriString := "/add_ipvs/" + ipvsSend.Protocol + "/" + ipvsSend.IP + "/" + ipvsSend.Port + "/"
-		statuscode, body, err := client.newRequest(uriString, ipvsSend)
+		statuscode, body, err := client.newRequest(ctx, uriString, ipvsSend)
 		if err != nil {
 			return ipvsReturn, err
 		}
@@ -133,7 +134,7 @@ func (client *Client) requestAPI(action string, ipvsSend *ipvs) (ipvs, error) {
 		return ipvsReturn, nil
 	case "REMOVE":
 		uriString := "/remove_ipvs/" + ipvsSend.Protocol + "/" + ipvsSend.IP + "/" + ipvsSend.Port + "/"
-		statuscode, body, err := client.newRequest(uriString, ipvsSend)
+		statuscode, body, err := client.newRequest(ctx, uriString, ipvsSend)
 		if err != nil {
 			return ipvsReturn, err
 		}
@@ -147,7 +148,7 @@ func (client *Client) requestAPI(action string, ipvsSend *ipvs) (ipvs, error) {
 		return ipvsReturn, nil
 	case "CHECK":
 		uriString := "/check_ipvs/" + ipvsSend.Protocol + "/" + ipvsSend.IP + "/" + ipvsSend.Port + "/"
-		statuscode, body, err := client.newRequest(uriString, ipvsSend)
+		statuscode, body, err := client.newRequest(ctx, uriString, ipvsSend)
 		if err != nil {
 			return ipvsReturn, err
 		}
@@ -170,7 +171,7 @@ func (client *Client) requestAPI(action string, ipvsSend *ipvs) (ipvs, error) {
 		return ipvsReturn, nil
 	case "CHANGE":
 		uriString := "/change_ipvs/" + ipvsSend.Protocol + "/" + ipvsSend.IP + "/" + ipvsSend.Port + "/"
-		statuscode, body, err := client.newRequest(uriString, ipvsSend)
+		statuscode, body, err := client.newRequest(ctx, uriString, ipvsSend)
 		if err != nil {
 			return ipvsReturn, err
 		}

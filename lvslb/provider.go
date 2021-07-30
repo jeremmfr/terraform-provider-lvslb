@@ -3,8 +3,7 @@ package lvslb
 import (
 	"os"
 
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const nullStr string = "null"
@@ -13,7 +12,7 @@ const (
 )
 
 // Provider lvslb for terraform.
-func Provider() terraform.ResourceProvider {
+func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"firewall_ip": {

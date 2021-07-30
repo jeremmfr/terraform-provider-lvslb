@@ -1,12 +1,15 @@
 package lvslb
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 const (
@@ -28,99 +31,61 @@ const (
 
 func resourceIpvs() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceIpvsCreate,
-		Read:   resourceIpvsRead,
-		Update: resourceIpvsUpdate,
-		Delete: resourceIpvsDelete,
+		CreateContext: resourceIpvsCreate,
+		ReadContext:   resourceIpvsRead,
+		UpdateContext: resourceIpvsUpdate,
+		DeleteContext: resourceIpvsDelete,
 
 		Schema: map[string]*schema.Schema{
 			"ip": {
-				Type:     schema.TypeString,
-				Required: true,
-				ValidateFunc: func(v interface{}, k string) (ws []string, errors []error) {
-					value := v.(string)
-					testInput := net.ParseIP(value)
-					if testInput.To16() == nil {
-						errors = append(errors, fmt.Errorf("[ERROR] %q %v isn't an IPv4 or IPv6", k, value))
-					}
-
-					return
-				},
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.IsIPAddress,
 			},
 			"port": {
 				Type:         schema.TypeInt,
 				Required:     true,
-				ValidateFunc: validateIntegerInRange(0, maxInternetPort),
+				ValidateFunc: validation.IntBetween(0, maxInternetPort),
 			},
 			"protocol": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "TCP",
-				ValidateFunc: func(v interface{}, k string) (ws []string, errors []error) {
-					value := strings.ToUpper(v.(string))
-					if value != "TCP" && value != "UDP" && value != "SCTP" {
-						errors = append(errors, fmt.Errorf("[ERROR] %q must be TCP or UDP", k))
-					}
-
-					return
-				},
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "TCP",
+				ValidateFunc: validation.StringInSlice([]string{"TCP", "UDP", "SCTP"}, true),
 			},
 			"type": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "NAT",
-				ValidateFunc: func(v interface{}, k string) (ws []string, errors []error) {
-					value := strings.ToUpper(v.(string))
-					if value != "NAT" && value != "DR" && value != "TUN" {
-						errors = append(errors, fmt.Errorf("[ERROR] %q must be NAT, DR or TUN", k))
-					}
-
-					return
-				},
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "NAT",
+				ValidateFunc: validation.StringInSlice([]string{"NAT", "DR", "TUN"}, true),
 			},
 			"algo": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "wlc",
-				ValidateFunc: func(v interface{}, k string) (ws []string, errors []error) {
-					value := strings.ToLower(v.(string))
-					if value != "wlc" && value != "lc" && value != "rr" && value != "wrr" &&
-						value != "lblc" && value != "sh" && value != "dh" {
-						errors = append(errors, fmt.Errorf("[ERROR] %q must be wlc, lc, rr, wrr, lblc, sh or dh", k))
-					}
-
-					return
-				},
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "wlc",
+				ValidateFunc: validation.StringInSlice([]string{"wlc", "lc", "rr", "wrr", "lblc", "sh", "dh"}, true),
 			},
 			"persistence_timeout": {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Default:      0,
-				ValidateFunc: validateIntegerInRange(0, maxPersistenceTimeout),
+				ValidateFunc: validation.IntBetween(0, maxPersistenceTimeout),
 			},
 			"timer_check": {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Default:      defaultTimerCheck,
-				ValidateFunc: validateIntegerInRange(one, maxTimerCheck),
+				ValidateFunc: validation.IntBetween(one, maxTimerCheck),
 			},
 			"sorry_server_ip": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ValidateFunc: func(v interface{}, k string) (ws []string, errors []error) {
-					value := v.(string)
-					testInput := net.ParseIP(value)
-					if testInput.To16() == nil {
-						errors = append(errors, fmt.Errorf("[ERROR] %q %v isn't an IPv4 or IPv6", k, value))
-					}
-
-					return
-				},
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.IsIPAddress,
 			},
 			"sorry_server_port": {
 				Type:         schema.TypeInt,
 				Optional:     true,
-				ValidateFunc: validateIntegerInRange(0, maxInternetPort),
+				ValidateFunc: validation.IntBetween(0, maxInternetPort),
 			},
 			"virtualhost": {
 				Type:     schema.TypeString,
@@ -144,50 +109,42 @@ func resourceIpvs() *schema.Resource {
 						"port": {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							ValidateFunc: validateIntegerInRange(0, maxInternetPort),
+							ValidateFunc: validation.IntBetween(0, maxInternetPort),
 						},
 						"weight": {
 							Type:         schema.TypeInt,
 							Optional:     true,
 							Default:      one,
-							ValidateFunc: validateIntegerInRange(one, maxBackendWeight),
+							ValidateFunc: validation.IntBetween(one, maxBackendWeight),
 						},
 						"check_type": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Default:  "TCP_CHECK",
-							ValidateFunc: func(v interface{}, k string) (ws []string, errors []error) {
-								value := strings.ToUpper(v.(string))
-								if value != "TCP_CHECK" && value != "HTTP_GET" && value != "SSL_GET" &&
-									value != "MISC_CHECK" && value != "NONE" {
-									errors = append(errors, fmt.Errorf("[ERROR] %q must be TCP_CHECK, HTTP_GET, SSL GET, MISC_CHECK or NONE", k))
-								}
-
-								return
-							},
+							Type:         schema.TypeString,
+							Optional:     true,
+							Default:      "TCP_CHECK",
+							ValidateFunc: validation.StringInSlice([]string{"TCP_CHECK", "HTTP_GET", "SSL_GET", "MISC_CHECK", "NONE"}, true),
 						},
 						"check_port": {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							ValidateFunc: validateIntegerInRange(one, maxInternetPort),
+							ValidateFunc: validation.IntBetween(one, maxInternetPort),
 						},
 						"check_timeout": {
 							Type:         schema.TypeInt,
 							Optional:     true,
 							Default:      defaultCheckTimeout,
-							ValidateFunc: validateIntegerInRange(one, maxCheckTimeout),
+							ValidateFunc: validation.IntBetween(one, maxCheckTimeout),
 						},
 						"nb_get_retry": {
 							Type:         schema.TypeInt,
 							Optional:     true,
 							Default:      defaultNbGetRetry,
-							ValidateFunc: validateIntegerInRange(one, maxNbGetRetry),
+							ValidateFunc: validation.IntBetween(one, maxNbGetRetry),
 						},
 						"delay_before_retry": {
 							Type:         schema.TypeInt,
 							Optional:     true,
 							Default:      defaultDelayBeforeRetry,
-							ValidateFunc: validateIntegerInRange(one, maxDelayBeforeRetry),
+							ValidateFunc: validation.IntBetween(one, maxDelayBeforeRetry),
 						},
 						"check_url": {
 							Type:     schema.TypeString,
@@ -200,7 +157,7 @@ func resourceIpvs() *schema.Resource {
 						"check_status_code": {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							ValidateFunc: validateIntegerInRange(minStatusCode, maxStatusCode),
+							ValidateFunc: validation.IntBetween(minStatusCode, maxStatusCode),
 						},
 						"misc_path": {
 							Type:     schema.TypeString,
@@ -213,16 +170,16 @@ func resourceIpvs() *schema.Resource {
 	}
 }
 
-func resourceIpvsCreate(d *schema.ResourceData, m interface{}) error {
+func resourceIpvsCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 	err := validateIPBackend(d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	Ipvs := createStrucIpvs(d)
-	_, err = client.requestAPI("ADD", &Ipvs)
+	_, err = client.requestAPI(ctx, "ADD", &Ipvs)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(d.Get("ip").(string) + "_" + strings.ToUpper(d.Get("protocol").(string)) +
 		"_" + strconv.Itoa(d.Get("port").(int)))
@@ -230,12 +187,12 @@ func resourceIpvsCreate(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceIpvsRead(d *schema.ResourceData, m interface{}) error {
+func resourceIpvsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 	Ipvs := createStrucIpvs(d)
-	IpvsRead, err := client.requestAPI("CHECK", &Ipvs)
+	IpvsRead, err := client.requestAPI(ctx, "CHECK", &Ipvs)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if IpvsRead.IP == nullStr {
 		d.SetId("")
@@ -264,11 +221,11 @@ func resourceIpvsRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceIpvsUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceIpvsUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	d.Partial(true)
 	client := m.(*Client)
 	if err := validateIPBackend(d); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	switch {
 	case d.HasChange("ip") || d.HasChange("port"):
@@ -279,15 +236,15 @@ func resourceIpvsUpdate(d *schema.ResourceData, m interface{}) error {
 		IpvsOld.Port = strconv.Itoa(oldPort.(int))
 		oldProtocol, _ := d.GetChange("protocol")
 		IpvsOld.Protocol = strings.ToUpper(oldProtocol.(string))
-		_, err := client.requestAPI("REMOVE", &IpvsOld)
+		_, err := client.requestAPI(ctx, "REMOVE", &IpvsOld)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		d.SetId("")
 		Ipvs := createStrucIpvs(d)
-		_, err = client.requestAPI("ADD", &Ipvs)
+		_, err = client.requestAPI(ctx, "ADD", &Ipvs)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		d.SetId(d.Get("ip").(string) + "_" + strings.ToUpper(d.Get("protocol").(string)) +
 			"_" + strconv.Itoa(d.Get("port").(int)))
@@ -295,31 +252,31 @@ func resourceIpvsUpdate(d *schema.ResourceData, m interface{}) error {
 		oldProtocol, _ := d.GetChange("protocol")
 		if strings.EqualFold(oldProtocol.(string), d.Get("protocol").(string)) {
 			Ipvs := createStrucIpvs(d)
-			_, err := client.requestAPI("CHANGE", &Ipvs)
+			_, err := client.requestAPI(ctx, "CHANGE", &Ipvs)
 			if err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 		} else {
 			IpvsOld := createStrucIpvs(d)
 			IpvsOld.Protocol = strings.ToUpper(oldProtocol.(string))
-			_, err := client.requestAPI("REMOVE", &IpvsOld)
+			_, err := client.requestAPI(ctx, "REMOVE", &IpvsOld)
 			if err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 			d.SetId("")
 			Ipvs := createStrucIpvs(d)
-			_, err = client.requestAPI("ADD", &Ipvs)
+			_, err = client.requestAPI(ctx, "ADD", &Ipvs)
 			if err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 			d.SetId(d.Get("ip").(string) + "_" + strings.ToUpper(d.Get("protocol").(string)) +
 				"_" + strconv.Itoa(d.Get("port").(int)))
 		}
 	default:
 		Ipvs := createStrucIpvs(d)
-		_, err := client.requestAPI("CHANGE", &Ipvs)
+		_, err := client.requestAPI(ctx, "CHANGE", &Ipvs)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 	d.Partial(false)
@@ -327,12 +284,12 @@ func resourceIpvsUpdate(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceIpvsDelete(d *schema.ResourceData, m interface{}) error {
+func resourceIpvsDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 	Ipvs := createStrucIpvs(d)
-	_, err := client.requestAPI("REMOVE", &Ipvs)
+	_, err := client.requestAPI(ctx, "REMOVE", &Ipvs)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil
