@@ -1,6 +1,6 @@
 # lvslb Provider
 
-Terraform's provider for generate keepalived virtual_server with [lvslb-api](https://github.com/jeremmfr/lvslb-api)
+Terraform's provider to generate keepalived virtual_server with [lvslb-api](https://github.com/jeremmfr/lvslb-api)
 
 ## Example Usage
 
