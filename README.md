@@ -6,7 +6,7 @@
 [![Lint Status](https://github.com/jeremmfr/terraform-provider-lvslb/workflows/GolangCI-Lint/badge.svg)](https://github.com/jeremmfr/terraform-provider-lvslb/actions)
 [![Go Report Card](https://goreportcard.com/badge/github.com/jeremmfr/terraform-provider-lvslb)](https://goreportcard.com/report/github.com/jeremmfr/terraform-provider-lvslb)
 
-Terraform's provider for generate keepalived virtual_server with [lvslb-api](https://github.com/jeremmfr/lvslb-api)
+Terraform's provider to generate keepalived virtual_server with [lvslb-api](https://github.com/jeremmfr/lvslb-api)
 
 ## Automatic install (Terraform 0.13 and later)
 
